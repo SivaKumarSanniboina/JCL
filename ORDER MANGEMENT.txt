@@ -1,0 +1,192 @@
+LEMA07.COBOL.ORDER.SRC(ORDER) 
+LEMA07.COBOL.ORDER.LOADLIB 
+'LEMA07.COBOL.ORDER.TRANSIN' 
+	T0001P000130  
+ 	T0002P000210  
+ 	T0003P000315  
+'LEMA07.COBOL.ORDER.MASTIN'
+	P0001PEN 2040000 
+	P0002BALL5050000 
+	P0003BAT 4020000 
+'LEMA07.COBOL.ORDER.SHIPOUT'
+'LEMA07.COBOL.ORDER.PENDOUT'  
+
+COBOL CODE:::::
+
+IDENTIFICATION DIVISION.                     
+PROGRAM-ID. ORDERMNG.                        
+ENVIRONMENT DIVISION.                        
+INPUT-OUTPUT SECTION.                        
+FILE-CONTROL.                                
+    SELECT TRANSFYL ASSIGN TO TRANSIN        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-TRANSFYL-STATUS.          
+    SELECT MASTERFYL ASSIGN TO MASTIN        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-MASTERFYL-STATUS.         
+    SELECT SHIPFYL ASSIGN TO SHIPOUT1         
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-SHIPFYL-STATUS.           
+    SELECT PENDFYL ASSIGN TO PENDOUT1        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-PENDFYL-STATUS.           
+DATA DIVISION.                               
+FILE SECTION.                                
+FD  TRANSFYL.                                
+01  TRANSREC.                                
+    05  TRANSID    PIC X(5).                 
+    05  PRODID     PIC X(5).                 
+    05  QREQ       PIC 9(2).                 
+    05  FILLER     PIC X(68).                
+FD  MASTERFYL.                               
+01  MASTERREC.                               
+    05  PRODID     PIC X(5).                 
+    05  PRODNAME   PIC X(4).                 
+    05  QOH        PIC 9(2).                 
+    05  PRICE      PIC 9(5).                 
+    05  FILLER     PIC X(62).                
+FD  SHIPFYL.                                 
+01  SHIPREC.                                 
+    05  TRANSID    PIC X(5).                 
+    05  PRODID     PIC X(5).
+    05  QREQ       PIC 9(2).                    
+    05  BILL       PIC 9(6).                    
+    05  FILLER     PIC X(62).                   
+FD  PENDFYL.                                    
+01  PENDREC.                                    
+    05  TRANSID    PIC X(5).                    
+    05  PRODID     PIC X(5).                    
+    05  QREQ       PIC 9(2).                    
+    05  FILLER     PIC X(68).                   
+WORKING-STORAGE SECTION.                        
+77  EOF           PIC 9(1)    VALUE ZERO.       
+77  WS-BILL       PIC 9(6).                     
+01  WS-FILE-STATUS.                             
+    05  WS-TRANSFYL-STATUS    PIC 9(2).         
+    05  WS-MASTERFYL-STATUS   PIC 9(2).         
+    05  WS-SHIPFYL-STATUS     PIC 9(2).         
+    05  WS-PENDFYL-STATUS     PIC 9(2).                            
+01  WS-COUNTERS.                                       
+     05  WS-TRANSFYL-RD-CNT    PIC 9(4)    VALUE ZEROES.
+     05  WS-MASTERFYL-RD-CNT   PIC 9(4)    VALUE ZEROES.   
+     05  WS-SHIPFYL-WT-CNT     PIC 9(4)    VALUE ZEROES.   
+     05  WS-PENDFYL-WT-CNT     PIC 9(4)    VALUE ZEROES.   
+ PROCEDURE DIVISION.                                       
+ 0000-MAIN-PARA.                                           
+     PERFORM 1000-ORDER-OPEN-PARA.                         
+         IF WS-TRANSFYL-STATUS='00' THEN                   
+             IF WS-MASTERFYL-STATUS='00' THEN              
+                 PERFORM 2000-ORDER-READ-PARA UNTIL EOF=1  
+             END-IF                                        
+         END-IF                                            
+     PERFORM 3000-ORDER-CLOSE-PARA.                        
+     STOP RUN.                                             
+ 1000-ORDER-OPEN-PARA.                                     
+     OPEN INPUT TRANSFYL.                                  
+     DISPLAY 'FILE STATUS FOR TRANS',WS-TRANSFYL-STATUS.   
+     OPEN INPUT MASTERFYL.                                 
+     DISPLAY 'FILE STATUS FOR MASTER',WS-MASTERFYL-STATUS. 
+     OPEN OUTPUT SHIPFYL.                                  
+     DISPLAY 'FILE STATUS FOR SHIP',WS-SHIPFYL-STATUS.     
+     OPEN OUTPUT PENDFYL.                                  
+     DISPLAY 'FILE STATUS FOR PEND',WS-PENDFYL-STATUS.     
+ 2000-ORDER-READ-PARA.                                     
+     READ TRANSFYL                                         
+         AT END                                            
+            MOVE 1 TO EOF                                  
+         NOT AT END                                        
+            ADD 1 TO WS-TRANSFYL-RD-CNT                    
+     OPEN INPUT MASTERFYL                                  
+     READ MASTERFYL                                        
+         AT END                                            
+            MOVE 1 TO EOF                                  
+         NOT AT END                                        
+            ADD 1 TO WS-MASTERFYL-RD-CNT                   
+         IF PRODID OF TRANSREC=PRODID OF                   
+                      MASTERREC THEN                       
+             IF QREQ OF TRANSREC <= QOH OF                 
+                         MASTERREC THEN                
+                 MOVE TRANSID OF TRANSREC TO           
+                      TRANSID OF SHIPREC               
+                 MOVE PRODID OF TRANSREC TO            
+                      PRODID OF SHIPREC                
+                 MOVE QREQ OF TRANSREC TO              
+                      QREQ OF SHIPREC                  
+                 COMPUTE WS-BILL = QREQ OF             
+                 TRANSREC *  PRICE OF MASTERREC        
+                 MOVE WS-BILL TO BILL OF SHIPREC       
+                 PERFORM 2500-SHIPFYL-WRITE-PARA       
+             ELSE                                      
+                 MOVE TRANSID OF TRANSREC TO           
+                      TRANSID OF PENDREC               
+                 MOVE PRODID OF TRANSREC TO            
+                      PRODID OF PENDREC                
+                 MOVE QREQ OF TRANSREC TO              
+                      QREQ OF PENDREC                  
+                 PERFORM 2600-PENDFYL-WRITE-PARA       
+             END-IF                                    
+         ELSE                                          
+             DISPLAY 'PRODUCT NOT AVAILABLE'           
+         END-IF                                        
+         CLOSE MASTERFYL                               
+     END-READ.                                         
+ 2500-SHIPFYL-WRITE-PARA.                              
+     WRITE SHIPREC                                     
+     ADD 1 TO WS-SHIPFYL-WT-CNT.                       
+ 2600-PENDFYL-WRITE-PARA.                              
+     WRITE PENDREC                                     
+     ADD 1 TO WS-PENDFYL-WT-CNT.                       
+ 3000-ORDER-CLOSE-PARA.                                
+     CLOSE TRANSFYL.                                   
+     CLOSE MASTERFYL.                                  
+     CLOSE SHIPFYL.                                    
+     CLOSE PENDFYL. 
+                                   
+LOADLIB :::
+'LEMA07.ORDER.COBOL.LOADLIB'
+ Average record unit           
+ Primary quantity  . . 3       
+ Secondary quantity    1       
+ Directory blocks  . . 5       
+ Record format . . . . U       
+ Record length . . . . 80      
+ Block size  . . . . . 800     
+ Data set name type    PDS     
+
+
+COMPILE JCL :::::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+//PLIB    JCLLIB ORDER=(MATE2.PROCLIB)              
+//*                                                 
+//*  COMPILE A COBOL PROGRAM                        
+//*                                                 
+//CL      EXEC COBOLCL,                             
+//*            COPYLIB=LEMA07.COPYLIB,              
+//             LOADLIB=LEMA07.COBOL.ORDER.LOADLIB,  
+//             SRCLIB=LEMA07.COBOL.ORDER.SRC,       
+//             MEMBER=ORDERMNG     <= SOURCE MEMBER 
+
+RUN JCL:::
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B        
+//*                                                        
+//*  RUN A COBOL PROGRAM                                   
+//*                                                        
+//STEP10  EXEC PGM=ORDERMNG                                
+//STEPLIB  DD  DSN=LEMA07.COBOL.ORDER.LOADLIB,DISP=SHR     
+//TRANSIN  DD  DSN=LEMA07.COBOL.ORDER.TRANSIN,DISP=SHR     
+//MASTIN   DD  DSN=LEMA07.COBOL.ORDER.MASTIN,DISP=SHR      
+//SHIPOUT1 DD  DSN=LEMA07.COBOL.ORDER.SHIPOUT1,            
+//             DISP=(MOD,CATLG,DELETE),                    
+//             UNIT=SYSDA,                                 
+//             SPACE=(TRK,(1,1),RLSE),                     
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)         
+//PENDOUT1 DD  DSN=LEMA07.COBOL.ORDER.PENDOUT1,            
+//             DISP=(MOD,CATLG,DELETE),                    
+//             UNIT=SYSDA,                                 
+//             SPACE=(TRK,(1,1),RLSE),                     
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)         
+//SYSOUT   DD  SYSOUT=*                                    
+//                                                         
+                                    

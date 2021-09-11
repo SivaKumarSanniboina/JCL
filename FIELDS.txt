@@ -1,0 +1,42 @@
+FOR PS:::
+                                  
+ Average record unit              
+ Primary quantity  . . 3          
+ Secondary quantity    1          
+ Directory blocks  . . 0          
+ Record format . . . . FB         
+ Record length . . . . 80         
+ Block size  . . . . . 800        
+ Data set name type 
+
+FOR LOADMODULE:::
+
+Average record unit              
+ Primary quantity  . . 3          
+ Secondary quantity    1          
+ Directory blocks  . . 5          
+ Record format . . . . U         
+ Record length . . . . 80         
+ Block size  . . . . . 800        
+ Data set name type    PDS
+
+
+
+FOR PDS::: 
+
+Management class . . .                (Blank for default management class)
+ Storage class  . . . .                (Blank for default storage class)   
+  Volume serial . . . . STRVL2         (Blank for system default volume) **
+  Device type . . . . .                (Generic unit or device address) ** 
+ Data class . . . . . .                (Blank for default data class)      
+  Space units . . . . . BLOCK          (BLKS, TRKS, CYLS, KB, MB, BYTES    
+                                        or RECORDS)                        
+  Average record unit                  (M, K, or U)                        
+  Primary quantity  . . 3              (In above units)                    
+  Secondary quantity    1              (In above units)                    
+  Directory blocks  . . 5              (Zero for sequential data set) *    
+  Record format . . . . FB                                                 
+  Record length . . . . 80                                                 
+  Block size  . . . . . 800                                                
+  Data set name type    PDS            (LIBRARY, HFS, PDS, LARGE, BASIC, * 
+                                        EXTREQ, EXTPREF or blank)               

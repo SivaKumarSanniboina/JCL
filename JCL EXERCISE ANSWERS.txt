@@ -1,0 +1,562 @@
+1)
+LEMA07.SIVA.COBOL.SRC  
+ 
+IDENTIFICATION DIVISION.      
+ PROGRAM-ID. PGR1.             
+ ENVIRONMENT DIVISION.         
+ DATA DIVISION.                
+ PROCEDURE DIVISION.           
+     DISPLAY ' HELLO COBOL'.   
+     STOP RUN.            
+
+2)3.2 Enter
+
+  FOR PS:::
+                                  
+ Average record unit              
+ Primary quantity  . . 3          
+ Secondary quantity    1          
+ Directory blocks  . . 0          
+ Record format . . . . FB         
+ Record length . . . . 80         
+ Block size  . . . . . 800        
+ Data set name type 
+
+  FOR PDS::: 
+
+  Average record unit                                       
+  Primary quantity  . . 3                            
+  Secondary quantity    1                                
+  Directory blocks  . . 5                 
+  Record format . . . . FB                                                 
+  Record length . . . . 80                                                 
+  Block size  . . . . . 800                                                
+  Data set name type    PDS  
+
+3)
+LEMA07.SIVACONC.EMPFILE.INFILE  -file1
+LEMA07.SIVACONC.EMPFILE.INFILE1 -file2
+
+COBOL :::
+
+ IDENTIFICATION DIVISION.                                
+ PROGRAM-ID. CONCAT.                                     
+ ENVIRONMENT DIVISION.                                   
+ INPUT-OUTPUT SECTION.                                   
+ FILE-CONTROL.                                           
+     SELECT EMPLFL ASSIGN TO EMPFILE                     
+     ORGANIZATION IS SEQUENTIAL                          
+     ACCESS MODE IS SEQUENTIAL.                          
+ DATA DIVISION.                                          
+ FILE SECTION.                                           
+ FD EMPLFL.                                              
+ 01 EMPREC.                                              
+     05 EMPID    PIC X(4).                               
+     05 EMPNAME  PIC X(10).                              
+     05 SALARY   PIC 9(5).                               
+     05 GENDER   PIC A(1).                               
+     05 FILLER   PIC X(60).                              
+ WORKING-STORAGE SECTION.                                
+ 77 WS-COUNT     PIC 99 VALUE 0.                         
+ 77 WS-EMPFL-EOF PIC 9  VALUE 0.                         
+ PROCEDURE DIVISION.                                     
+ 0000-MAIN-PARA.                                         
+     PERFORM 1000-OPEN-PARA.                             
+     PERFORM 2000-READ-PARA UNTIL WS-EMPFL-EOF=1.        
+     PERFORM 3000-CLOSE-PARA.                            
+     DISPLAY WS-COUNT.                                   
+     STOP RUN.                                           
+ 1000-OPEN-PARA.                                         
+     OPEN INPUT EMPLFL.                                  
+ 2000-READ-PARA.                                         
+     READ EMPLFL                                         
+         AT END                                          
+             MOVE 1 TO WS-EMPFL-EOF                      
+         NOT AT END                                      
+             ADD 1 TO WS-COUNT                           
+     END-READ. 
+ 3000-CLOSE-PARA.  
+     CLOSE EMPLFL.   
+
+4)
+
+COPY THE DATA SET::
+
+3.4 ENTER
+	FROM NAME - 'LEMA07.JOBLIB' AND ENTER C IN COMMAND AND ENTER
+
+	TO NAME   - 'LEMA07.SIVA.JOBLIB.BACKUP'  AND ENTER
+PRESS 1 AND ENTER
+NOW IT IS LISTING OUT ALL THE MEMBERS.
+AND GO TO . SYMBOL AND ENTER - IT WILL SHOWE COPIED AND
+U CAN CLICK . AND ENTER WHATEVER U WANT TO COPY
+
+HOW DO I CONFIRM WHETHER THEY COPIED OR NOT ::
+
+GO TO 3.4 AND SEE 'LEMA07.SIVA.JOBLIB.BACKUP'.
+
+5)
+LEMA07.SIVA1.COBOL.SRC(PRODPS) - SOURCE
+PRODPSIN - INPUT FILE NAME IN CODE
+
+LEMA07.SIVA1.COBOL.PRODPSIN      
+
+ P0001DAIRY MILK1000CHOCOLATE1ACTIVE  
+ P0002DAIRY MILK2000CHOCOLATE1INACTIVE
+ P0003BRINJAL   0300VEGETABLESACTIVE 
+ 
+PRODPSOUT- OUPUT FILE NAME IN CODE
+
+COBOL CODE::::
+
+       IDENTIFICATION DIVISION.                             
+       PROGRAM-ID. PRODPS.                                  
+       ENVIRONMENT DIVISION.                                
+       INPUT-OUTPUT SECTION.                                
+       FILE-CONTROL.                                        
+           SELECT PRODFILE ASSIGN TO PRODPSIN               
+           ORGANIZATION IS LINE SEQUENTIAL                  
+           FILE STATUS WS-PRODFILE-STATUS.                  
+           SELECT OUTFYL ASSIGN TO PRODPSOUT                
+           ORGANIZATION IS LINE SEQUENTIAL                  
+           FILE STATUS WS-OUTFYL-STATUS.                    
+       DATA DIVISION.                                       
+       LINKAGE SECTION.                                     
+       01  PARM-REC.                                        
+           05 PARM-LEN    PIC S9(04) COMP.                  
+           05 PARM-VALUE  PIC X(10).                        
+       PROCEDURE USING PARM-REC.                            
+       FILE SECTION.                                        
+       FD  PRODFILE.                                        
+       01  PRODFILE-REC.                                    
+           05 PRODUCTID    PIC X(5).                        
+           05 PRODUCTNAME  PIC X(10).                       
+           05 PRICE        PIC 9(4).                        
+           05 CATEGORY     PIC X(10).                       
+           05 STATS        PIC X(8).                        
+           05 FILLER       PIC X(43).                       
+       FD  OUTFYL.                                          
+       01  OUTFYL-REC.                                      
+           05 PRODUCTID    PIC X(5).                        
+           05 PRODUCTNAME  PIC X(10).                       
+           05 PRICE        PIC 9(4).                        
+           05 CATEGORY     PIC X(10).                       
+           05 STATS        PIC X(8).                        
+           05 FILLER       PIC X(43).                       
+       WORKING-STORAGE SECTION.                             
+       01  WS-FILE-STATUS    PIC X(2).
+            05 WS-PRODFILE-STATUS    PIC X(2).                  
+     05 WS-OUTFYL-STATUS      PIC X(2).                  
+ 88  EOF        VALUE 'Y'.                               
+ 88  NOT-EOF    VALUE 'N'.                               
+ 01  WS-COUNTERS.                                        
+     05 WS-PRODFILE-RD-CNT    PIC 9(4)    VALUE ZEROES.  
+     05 WS-OUTFYL-WT-CNT      PIC 9(4)    VALUE ZEROES.  
+ PROCEDURE DIVISION.                                     
+ 0000-MAIN PARA.                                         
+     PERFORM 1000-PRODFILE-OPEN-PARA.                    
+     IF WS-PRODFILE-STATUS = '00' THEN                   
+         PERFORM 2000-PRODFILE-READ-PARA UNTIL EOF       
+     ELSE                                                     
+         DISPLAY 'FILE NOT FOUND'                             
+     END-IF.                                                  
+     PERFORM 3000-PRODFILE-CLOSE PARA.                        
+     DISPLAY 'NO.OF RECORDS READ: ',WS-PRODFILE-RD-CNT.       
+     DISPLAY 'NO.OF RECORDS WRITTEN: ',WS-OUTFYL-WT-CNT.      
+     STOP RUN.                                                
+ 1000-PRODFILE-OPEN-PARA.                                     
+     OPEN INPUT PRODFILE                                      
+     DISPLAY 'FILE STATUS FOR PRODFILE : ',WS-PRODFILE-STATUS.
+     OPEN OUTPUT OUTFYL.                                      
+     DISPLAY 'FILE STATUS FOR OUTFYLE : ',WS-OUTFYL-STATUS.   
+ 2000-PRODFILE-READ-PARA.                                     
+     READ PRODFILE                                            
+         AT END                                               
+             MOVE 'Y' TO EOF                                  
+         NOT AT END                                           
+             ADD 1 TO WS-PRODFILE-RD-CNT                      
+         IF PARM-VALUE = CATEGORY OF PRODFILE-REC THEN        
+             PERFORM 2500-WRITE-PARA                          
+         END-IF                                               
+     END-READ.                                                
+ 2500-WRITE-PARA.                                             
+     MOVE PRODUCTID OF PRODFILE-REC TO PRODUCTID OF OUTFYL-REC
+     MOVE PRODUCTNAME OF PRODFILE-REC TO                      
+     PRODUCTNAME OF OUTFYL-REC                                
+     MOVE PRICE OF PRODFILE-REC TO PRICE OF OUTFYL-REC        
+     MOVE CATEGORY OF PRODFILE-REC TO CATEGORY OF OUTFYL-REC  
+     MOVE STATS OF PRODFILE-REC TO STATS OF OUTFYL-REC        
+     WRITE OUTFYL-REC.             
+     ADD 1 TO WS-OUTFYL-WT-CNT.    
+ 3000-PRODFILE-CLOSE-PARA.         
+     CLOSE PRODFILE.               
+     CLOSE OUTFYL.  
+
+
+COMPILE JCL:::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+ //PLIB    JCLLIB ORDER=(MATE2.PROCLIB)              
+ //*                                                 
+ //*  COMPILE A COBOL PROGRAM                        
+ //*                                                 
+ //CL      EXEC COBOLCL,                             
+ //*            COPYLIB=LEMA07.COPYLIB,              
+ //             LOADLIB=LEMA07.SIVA1.COBOL.LOADLIB,  
+ //             SRCLIB=LEMA07.SIVA1.COBOL.SRC,       
+ //             MEMBER=PRODPS     <= SOURCE MEMBER   
+
+RUN JCL::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                      
+ //*                                                              
+ //*  RUN PRODUCT PS PROGRAM                                      
+ //*                                                              
+ //STEP10  EXEC  PGM=PRODPS,PARM='CHOCOLATE1'                     
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR          
+ //PRODPSIN  DD  DSN=LEMA07.SIVA1.COBOL.PRODPSIN,DISP=SHR         
+ //PRODPSOUT DD  DSN=LEMA07.SIVA1.COBOL.PRODPSOUT,                
+ //              DISP=(NEW,CATLG,DELETE),                         
+ //              UNIT=SYSDA,                                      
+ //              SPACE=(TRK,(1,1),RLSE),                          
+ //              DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)              
+ //SYSOUT    DD  SYSOUT=*                                         
+ //                                                    
+
+6)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B     
+//*                                                     
+//*  IEFBR14                               
+//*                                                     
+//STEP01  EXEC PGM=IEFBR14                              
+//INFILE   DD  DSN=LEMA07.KUMAR.PRODUCT.INFILE,         
+//             DISP=(MOD,CTLG,DELETE),                  
+//             UNIT=SYSDA,                              
+//             SPACE=(TRK,(1,1),RLSE),                  
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)      
+//SYSOUT   DD  SYSOUT=* 
+
+7)
+IDENTIFICATION DIVISION.
+       PROGRAM-ID. EMPFILE.
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT TRANSFILE ASSIGN TO 
+           'C:/Users/HP PC/COBOL/TRANSFILE.TXT'
+           ORGANIZATION IS LINE SEQUENTIAL
+           FILE STATUS WS-TRANSFILE-STATUS.
+       DATA DIVISION.
+       FILE SECTION.
+       FD  TRANSFILE.
+       01  TRANSFILE-REC.
+           05 TRANSACTIONID    PIC X(5).
+           05 PRODUCTID        PIC X(5).
+           05 QUANTITYREQ      PIC 9(2).
+
+           05 FILLER           PIC X(68).
+       WORKING-STORAGE SECTION.
+       01  WS-FILE-STATUS.
+           05  WS-TRANSFILE-STATUS      PIC X(2).
+          
+       88  EOF                         VALUE 'Y'.
+       88  NOT-EOF                     VALUE 'N'.
+
+
+       01  WS-COUNTERS.
+           05 WS-TRANSFILE-RD-CNT       PIC 9(4)        VALUE ZEROES. 
+       PROCEDURE DIVISION.
+       0000-MAIN-PARA.
+           PERFORM 1000-TRANSFILE-OPEN-PARA.
+
+           IF WS-TRANSFILE-STATUS = '00' THEN
+               MOVE 10 TO RETURN-CODE
+           END-IF
+           PERFORM 3000-TRANSFYL-CLOSE-PARA
+           DISPLAY 'NO. OF RECORD READ FROM TRANSFYL: ',
+                                       WS-TRANSFILE-RD-CNT.
+           DISPLAY 'RETURN CODE IS: ',RETURN-CODE.
+           STOP RUN.
+       1000-TRANSFILE-OPEN-PARA.
+           OPEN INPUT TRANSFILE.
+           DISPLAY 'FILE STATUS FOR TRANSFILE:', WS-TRANSFILE-STATUS.
+       3000-TRANSFYL-CLOSE-PARA.
+           CLOSE TRANSFILE.
+8)
+
+LEMA07.COBOL.ORDER.SRC(ORDER) 
+LEMA07.COBOL.ORDER.LOADLIB 
+'LEMA07.COBOL.ORDER.TRANSIN' 
+	T0001P000130  
+ 	T0002P000210  
+ 	T0003P000315  
+'LEMA07.COBOL.ORDER.MASTIN'
+	P0001PEN 2040000 
+	P0002BALL5050000 
+	P0003BAT 4020000 
+'LEMA07.COBOL.ORDER.SHIPOUT'
+'LEMA07.COBOL.ORDER.PENDOUT'  
+
+COBOL CODE:::::
+
+IDENTIFICATION DIVISION.                     
+PROGRAM-ID. ORDERMNG.                        
+ENVIRONMENT DIVISION.                        
+INPUT-OUTPUT SECTION.                        
+FILE-CONTROL.                                
+    SELECT TRANSFYL ASSIGN TO TRANSIN        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-TRANSFYL-STATUS.          
+    SELECT MASTERFYL ASSIGN TO MASTIN        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-MASTERFYL-STATUS.         
+    SELECT SHIPFYL ASSIGN TO SHIPOUT1         
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-SHIPFYL-STATUS.           
+    SELECT PENDFYL ASSIGN TO PENDOUT1        
+    ORGANIZATION IS LINE SEQUENTIAL          
+    FILE STATUS WS-PENDFYL-STATUS.           
+DATA DIVISION.                               
+FILE SECTION.                                
+FD  TRANSFYL.                                
+01  TRANSREC.                                
+    05  TRANSID    PIC X(5).                 
+    05  PRODID     PIC X(5).                 
+    05  QREQ       PIC 9(2).                 
+    05  FILLER     PIC X(68).                
+FD  MASTERFYL.                               
+01  MASTERREC.                               
+    05  PRODID     PIC X(5).                 
+    05  PRODNAME   PIC X(4).                 
+    05  QOH        PIC 9(2).                 
+    05  PRICE      PIC 9(5).                 
+    05  FILLER     PIC X(62).                
+FD  SHIPFYL.                                 
+01  SHIPREC.                                 
+    05  TRANSID    PIC X(5).                 
+    05  PRODID     PIC X(5).
+    05  QREQ       PIC 9(2).                    
+    05  BILL       PIC 9(6).                    
+    05  FILLER     PIC X(62).                   
+FD  PENDFYL.                                    
+01  PENDREC.                                    
+    05  TRANSID    PIC X(5).                    
+    05  PRODID     PIC X(5).                    
+    05  QREQ       PIC 9(2).                    
+    05  FILLER     PIC X(68).                   
+WORKING-STORAGE SECTION.                        
+77  EOF           PIC 9(1)    VALUE ZERO.       
+77  WS-BILL       PIC 9(6).                     
+01  WS-FILE-STATUS.                             
+    05  WS-TRANSFYL-STATUS    PIC 9(2).         
+    05  WS-MASTERFYL-STATUS   PIC 9(2).         
+    05  WS-SHIPFYL-STATUS     PIC 9(2).         
+    05  WS-PENDFYL-STATUS     PIC 9(2).                            
+01  WS-COUNTERS.                                       
+     05  WS-TRANSFYL-RD-CNT    PIC 9(4)    VALUE ZEROES.
+     05  WS-MASTERFYL-RD-CNT   PIC 9(4)    VALUE ZEROES.   
+     05  WS-SHIPFYL-WT-CNT     PIC 9(4)    VALUE ZEROES.   
+     05  WS-PENDFYL-WT-CNT     PIC 9(4)    VALUE ZEROES.   
+ PROCEDURE DIVISION.                                       
+ 0000-MAIN-PARA.                                           
+     PERFORM 1000-ORDER-OPEN-PARA.                         
+         IF WS-TRANSFYL-STATUS='00' THEN                   
+             IF WS-MASTERFYL-STATUS='00' THEN              
+                 PERFORM 2000-ORDER-READ-PARA UNTIL EOF=1  
+             END-IF                                        
+         END-IF                                            
+     PERFORM 3000-ORDER-CLOSE-PARA.                        
+     STOP RUN.                                             
+ 1000-ORDER-OPEN-PARA.                                     
+     OPEN INPUT TRANSFYL.                                  
+     DISPLAY 'FILE STATUS FOR TRANS',WS-TRANSFYL-STATUS.   
+     OPEN INPUT MASTERFYL.                                 
+     DISPLAY 'FILE STATUS FOR MASTER',WS-MASTERFYL-STATUS. 
+     OPEN OUTPUT SHIPFYL.                                  
+     DISPLAY 'FILE STATUS FOR SHIP',WS-SHIPFYL-STATUS.     
+     OPEN OUTPUT PENDFYL.                                  
+     DISPLAY 'FILE STATUS FOR PEND',WS-PENDFYL-STATUS.     
+ 2000-ORDER-READ-PARA.                                     
+     READ TRANSFYL                                         
+         AT END                                            
+            MOVE 1 TO EOF                                  
+         NOT AT END                                        
+            ADD 1 TO WS-TRANSFYL-RD-CNT                    
+     OPEN INPUT MASTERFYL                                  
+     READ MASTERFYL                                        
+         AT END                                            
+            MOVE 1 TO EOF                                  
+         NOT AT END                                        
+            ADD 1 TO WS-MASTERFYL-RD-CNT                   
+         IF PRODID OF TRANSREC=PRODID OF                   
+                      MASTERREC THEN                       
+             IF QREQ OF TRANSREC <= QOH OF                 
+                         MASTERREC THEN                
+                 MOVE TRANSID OF TRANSREC TO           
+                      TRANSID OF SHIPREC               
+                 MOVE PRODID OF TRANSREC TO            
+                      PRODID OF SHIPREC                
+                 MOVE QREQ OF TRANSREC TO              
+                      QREQ OF SHIPREC                  
+                 COMPUTE WS-BILL = QREQ OF             
+                 TRANSREC *  PRICE OF MASTERREC        
+                 MOVE WS-BILL TO BILL OF SHIPREC       
+                 PERFORM 2500-SHIPFYL-WRITE-PARA       
+             ELSE                                      
+                 MOVE TRANSID OF TRANSREC TO           
+                      TRANSID OF PENDREC               
+                 MOVE PRODID OF TRANSREC TO            
+                      PRODID OF PENDREC                
+                 MOVE QREQ OF TRANSREC TO              
+                      QREQ OF PENDREC                  
+                 PERFORM 2600-PENDFYL-WRITE-PARA       
+             END-IF                                    
+         ELSE                                          
+             DISPLAY 'PRODUCT NOT AVAILABLE'           
+         END-IF                                        
+         CLOSE MASTERFYL                               
+     END-READ.                                         
+ 2500-SHIPFYL-WRITE-PARA.                              
+     WRITE SHIPREC                                     
+     ADD 1 TO WS-SHIPFYL-WT-CNT.                       
+ 2600-PENDFYL-WRITE-PARA.                              
+     WRITE PENDREC                                     
+     ADD 1 TO WS-PENDFYL-WT-CNT.                       
+ 3000-ORDER-CLOSE-PARA.                                
+     CLOSE TRANSFYL.                                   
+     CLOSE MASTERFYL.                                  
+     CLOSE SHIPFYL.                                    
+     CLOSE PENDFYL. 
+                                   
+LOADLIB :::
+'LEMA07.ORDER.COBOL.LOADLIB'
+ Average record unit           
+ Primary quantity  . . 3       
+ Secondary quantity    1       
+ Directory blocks  . . 5       
+ Record format . . . . U       
+ Record length . . . . 80      
+ Block size  . . . . . 800     
+ Data set name type    PDS     
+
+
+COMPILE JCL :::::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+//PLIB    JCLLIB ORDER=(MATE2.PROCLIB)              
+//*                                                 
+//*  COMPILE A COBOL PROGRAM                        
+//*                                                 
+//CL      EXEC COBOLCL,                             
+//*            COPYLIB=LEMA07.COPYLIB,              
+//             LOADLIB=LEMA07.COBOL.ORDER.LOADLIB,  
+//             SRCLIB=LEMA07.COBOL.ORDER.SRC,       
+//             MEMBER=ORDERMNG     <= SOURCE MEMBER 
+
+RUN JCL:::
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B        
+//*                                                        
+//*  RUN A COBOL PROGRAM                                   
+//*                                                        
+//STEP10  EXEC PGM=ORDERMNG                                
+//STEPLIB  DD  DSN=LEMA07.COBOL.ORDER.LOADLIB,DISP=SHR     
+//TRANSIN  DD  DSN=LEMA07.COBOL.ORDER.TRANSIN,DISP=SHR     
+//MASTIN   DD  DSN=LEMA07.COBOL.ORDER.MASTIN,DISP=SHR      
+//SHIPOUT1 DD  DSN=LEMA07.COBOL.ORDER.SHIPOUT1,            
+//             DISP=(MOD,CATLG,DELETE),                    
+//             UNIT=SYSDA,                                 
+//             SPACE=(TRK,(1,1),RLSE),                     
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)         
+//PENDOUT1 DD  DSN=LEMA07.COBOL.ORDER.PENDOUT1,            
+//             DISP=(MOD,CATLG,DELETE),                    
+//             UNIT=SYSDA,                                 
+//             SPACE=(TRK,(1,1),RLSE),                     
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)         
+//SYSOUT   DD  SYSOUT=*                                    
+// 
+
+
+9)
+
+LEMA07.SIVA1.COBOL.SRC(CONCAT)
+
+ IDENTIFICATION DIVISION.
+ PROGRAM-ID. CONCAT.                         
+ ENVIRONMENT DIVISION.                       
+ INPUT-OUTPUT SECTION.                       
+ FILE-CONTROL.                               
+     SELECT EMPFL ASSIGN TO INFILE           
+     ORGANIZATION IS SEQUENTIAL              
+     ACCESS MODE IS SEQUENTIAL.              
+ DATA DIVISION.                              
+ FILE SECTION.                               
+ FD EMPFL.                                   
+ 01 EMPREC.                                  
+     05 EMPID    PIC X(5).                   
+     05 EMPNAME  PIC X(15).                  
+     05 DEPT     PIC X(10).                  
+     05 SALARY   PIC 9(5).                   
+     05 FILLER   PIC X(45).                  
+ WORKING-STORAGE SECTION.                    
+ 77 WS-COUNT    PIC 99 VALUE 0.              
+ 77 WS-EOF      PIC 9  VALUE 0.              
+ PROCEDURE DIVISION.                         
+ 0000-MAIN PARA.                             
+     PERFORM 1000-OPEN-PARA.                 
+     PERFORM 2000-READ-PARA UNTIL WS-EOF=1.  
+     PERFORM 3000-CLOSE-PARA.                
+     STOP RUN.                               
+ 1000-OPEN-PARA.                             
+     OPEN INPUT EMPFL.                       
+ 2000-READ-PARA.                             
+     READ EMPFL                              
+         AT END                              
+           MOVE 1 TO WS-EOF                  
+         NOT AT END                          
+           MOVE 1 TO WS-COUNT                
+     END-READ.                               
+ 3000-CLOSE-PARA.                            
+     CLOSE EMPFL. 
+
+
+1)LEMA07.HTC.JAVA
+E0001SIVA KUMAR     JAVA      20000
+E0002RAJA KUMAR     JAVA      20000
+2)LEMA07.HTC.TRAINING
+E0001RANI KUMARI    TRAINING  18000
+E0002VASU KUMAR     TRAINING  18000
+3)LEMA07.HTC.MFRAMES
+E0001SIVA KUMAR     MFRAMES   19000
+E0002RAJ  KUMAR     MFRAMES   19000
+
+COMPILE JCL::
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID       
+//PLIB    JCLLIB ORDER=(MATE2.PROCLIB)            
+//*                                               
+//*  COMPILE A COBOL PROGRAM                      
+//*                                               
+//CL      EXEC COBOLCL,                           
+//*            COPYLIB=LEMA07.COPYLIB,            
+//             LOADLIB=LEMA07.SIVA1.COBOL.LOADLIB,
+//             SRCLIB=LEMA07.SIVA1.COBOL.SRC,     
+//             MEMBER=CONCAT    <= SOURCE MEMBER  
+
+RUN JCL::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                
+ //*                                                        
+ //*  RUN PRODUCT PS PROGRAM                                
+ //*                                                        
+ //STEP10  EXEC  PGM=CONCAT                                 
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR    
+ //INFILE    DD  DSN=LEMA07.HTC.JAVA,DISP=SHR               
+ //          DD  DSN=LEMA07.HTC.TRAINING,DISP=SHR           
+ //          DD  DSN=LEMA07.HTC.MFRAMES,DISP=SHR            
+ //SYSOUT    DD  SYSOUT=*                                   
+
+output:
+06                            
+
+

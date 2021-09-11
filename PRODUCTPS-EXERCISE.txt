@@ -1,0 +1,126 @@
+LEMA07.SIVA1.COBOL.SRC(PRODPS) - SOURCE
+PRODPSIN - INPUT FILE NAME IN CODE
+
+LEMA07.SIVA1.COBOL.PRODPSIN      
+
+ P0001DAIRY MILK1000CHOCOLATE1ACTIVE  
+ P0002DAIRY MILK2000CHOCOLATE1INACTIVE
+ P0003BRINJAL   0300VEGETABLESACTIVE 
+ 
+PRODPSOUT- OUPUT FILE NAME IN CODE
+
+COBOL CODE::::
+
+       IDENTIFICATION DIVISION.                             
+       PROGRAM-ID. PRODPS.                                  
+       ENVIRONMENT DIVISION.                                
+       INPUT-OUTPUT SECTION.                                
+       FILE-CONTROL.                                        
+           SELECT PRODFILE ASSIGN TO PRODPSIN               
+           ORGANIZATION IS LINE SEQUENTIAL                  
+           FILE STATUS WS-PRODFILE-STATUS.                  
+           SELECT OUTFYL ASSIGN TO PRODPSOUT                
+           ORGANIZATION IS LINE SEQUENTIAL                  
+           FILE STATUS WS-OUTFYL-STATUS.                    
+       DATA DIVISION.                                       
+       LINKAGE SECTION.                                     
+       01  PARM-REC.                                        
+           05 PARM-LEN    PIC S9(04) COMP.                  
+           05 PARM-VALUE  PIC X(10).                        
+       PROCEDURE USING PARM-REC.                            
+       FILE SECTION.                                        
+       FD  PRODFILE.                                        
+       01  PRODFILE-REC.                                    
+           05 PRODUCTID    PIC X(5).                        
+           05 PRODUCTNAME  PIC X(10).                       
+           05 PRICE        PIC 9(4).                        
+           05 CATEGORY     PIC X(10).                       
+           05 STATS        PIC X(8).                        
+           05 FILLER       PIC X(43).                       
+       FD  OUTFYL.                                          
+       01  OUTFYL-REC.                                      
+           05 PRODUCTID    PIC X(5).                        
+           05 PRODUCTNAME  PIC X(10).                       
+           05 PRICE        PIC 9(4).                        
+           05 CATEGORY     PIC X(10).                       
+           05 STATS        PIC X(8).                        
+           05 FILLER       PIC X(43).                       
+       WORKING-STORAGE SECTION.                             
+       01  WS-FILE-STATUS    PIC X(2).
+            05 WS-PRODFILE-STATUS    PIC X(2).                  
+     05 WS-OUTFYL-STATUS      PIC X(2).                  
+ 88  EOF        VALUE 'Y'.                               
+ 88  NOT-EOF    VALUE 'N'.                               
+ 01  WS-COUNTERS.                                        
+     05 WS-PRODFILE-RD-CNT    PIC 9(4)    VALUE ZEROES.  
+     05 WS-OUTFYL-WT-CNT      PIC 9(4)    VALUE ZEROES.  
+ PROCEDURE DIVISION.                                     
+ 0000-MAIN PARA.                                         
+     PERFORM 1000-PRODFILE-OPEN-PARA.                    
+     IF WS-PRODFILE-STATUS = '00' THEN                   
+         PERFORM 2000-PRODFILE-READ-PARA UNTIL EOF       
+     ELSE                                                     
+         DISPLAY 'FILE NOT FOUND'                             
+     END-IF.                                                  
+     PERFORM 3000-PRODFILE-CLOSE PARA.                        
+     DISPLAY 'NO.OF RECORDS READ: ',WS-PRODFILE-RD-CNT.       
+     DISPLAY 'NO.OF RECORDS WRITTEN: ',WS-OUTFYL-WT-CNT.      
+     STOP RUN.                                                
+ 1000-PRODFILE-OPEN-PARA.                                     
+     OPEN INPUT PRODFILE                                      
+     DISPLAY 'FILE STATUS FOR PRODFILE : ',WS-PRODFILE-STATUS.
+     OPEN OUTPUT OUTFYL.                                      
+     DISPLAY 'FILE STATUS FOR OUTFYLE : ',WS-OUTFYL-STATUS.   
+ 2000-PRODFILE-READ-PARA.                                     
+     READ PRODFILE                                            
+         AT END                                               
+             MOVE 'Y' TO EOF                                  
+         NOT AT END                                           
+             ADD 1 TO WS-PRODFILE-RD-CNT                      
+         IF PARM-VALUE = CATEGORY OF PRODFILE-REC THEN        
+             PERFORM 2500-WRITE-PARA                          
+         END-IF                                               
+     END-READ.                                                
+ 2500-WRITE-PARA.                                             
+     MOVE PRODUCTID OF PRODFILE-REC TO PRODUCTID OF OUTFYL-REC
+     MOVE PRODUCTNAME OF PRODFILE-REC TO                      
+     PRODUCTNAME OF OUTFYL-REC                                
+     MOVE PRICE OF PRODFILE-REC TO PRICE OF OUTFYL-REC        
+     MOVE CATEGORY OF PRODFILE-REC TO CATEGORY OF OUTFYL-REC  
+     MOVE STATS OF PRODFILE-REC TO STATS OF OUTFYL-REC        
+     WRITE OUTFYL-REC.             
+     ADD 1 TO WS-OUTFYL-WT-CNT.    
+ 3000-PRODFILE-CLOSE-PARA.         
+     CLOSE PRODFILE.               
+     CLOSE OUTFYL.  
+
+
+COMPILE JCL:::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+ //PLIB    JCLLIB ORDER=(MATE2.PROCLIB)              
+ //*                                                 
+ //*  COMPILE A COBOL PROGRAM                        
+ //*                                                 
+ //CL      EXEC COBOLCL,                             
+ //*            COPYLIB=LEMA07.COPYLIB,              
+ //             LOADLIB=LEMA07.SIVA1.COBOL.LOADLIB,  
+ //             SRCLIB=LEMA07.SIVA1.COBOL.SRC,       
+ //             MEMBER=PRODPS     <= SOURCE MEMBER   
+
+RUN JCL::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                      
+ //*                                                              
+ //*  RUN PRODUCT PS PROGRAM                                      
+ //*                                                              
+ //STEP10  EXEC  PGM=PRODPS,PARM='CHOCOLATE1'                     
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR          
+ //PRODPSIN  DD  DSN=LEMA07.SIVA1.COBOL.PRODPSIN,DISP=SHR         
+ //PRODPSOUT DD  DSN=LEMA07.SIVA1.COBOL.PRODPSOUT,                
+ //              DISP=(NEW,CATLG,DELETE),                         
+ //              UNIT=SYSDA,                                      
+ //              SPACE=(TRK,(1,1),RLSE),                          
+ //              DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)              
+ //SYSOUT    DD  SYSOUT=*                                         
+ //                                                                              	                      

@@ -1,0 +1,157 @@
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)     
+ //* PROGRAM FOR COPYING RECORD                             
+ //STEP10  EXEC PGM=SORT                                    
+ //SORTIN  DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR        
+ //SORTOUT DD   DSN=LEMA03.PAVAN.EMP.OUTFILE,DISP=SHR       
+ //SYSOUT  DD SYSOUT=*                                      
+ //SYSIN   DD *                                             
+   SORT FIELDS=COPY                                         
+ /*                                                         
+ //  
+
+-------------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)    
+ //STEP10  EXEC PGM=ICETOOL                                
+ //INDD    DD  DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR        
+ //TOOLIN  DD *                                            
+   COUNT FROM(INDD) USING(CTL1)                            
+ /*                                                        
+ //CTL1CNTL DD *                                           
+   INCLUDE COND=(22,1,CH,EQ,C'M')                          
+ /*                                                        
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR           
+ //DFSMSG    DD SYSOUT=*                                   
+ //                                                        
+-----------------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)              
+ //STEP10  EXEC PGM=SORT                                             
+ //SORTIN  DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR                 
+ //SORTOUT DD   DSN=LEMA03.PAVAN.EMP.OUTFILE,DISP=SHR                
+ //SYSOUT  DD SYSOUT=*                                               
+ //SYSIN   DD *                                                      
+   SORT FIELDS=COPY                                                  
+   INCLUDE COND=(22,1,CH,EQ,C'F')                                    
+ /*                                                                  
+------------------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)         
+ //STEP10     EXEC PGM=SORT                                     
+ //SORTIN01   DD   DSN=LEMA03.PAVAN.MERGE.INFILE,DISP=SHR       
+ //SORTIN02   DD   DSN=LEMA03.PAVAN.MERGE.INFILE1,DISP=SHR      
+ //SORTOUT    DD   DSN=LEMA03.PAVAN.MERGE.OUTFILE,DISP=SHR      
+ //SYSOUT     DD SYSOUT=*                                       
+ //SYSIN      DD *                                              
+   MERGE FIELDS=(1,3,CH,A)                                      
+ /*                                                             
+ //                                                             
+------------------------------------------------------------------------
+//LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)        
+//STEP10  EXEC PGM=ICETOOL                                    
+//INDD    DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR           
+//OUTDD   DD   DSN=LEMA03.PAVAN.OCCUR.OUTFILE,DISP=SHR        
+//TOOLIN  DD *                                                
+  OCCUR FROM(INDD) LIST(OUTDD) -                              
+  TITLE('NUMBER OF EMPLOYEES') -                              
+  BLANK -                                                     
+  HEADER('GENDER') ON(22,1,CH) -                              
+  HEADER('EMP-COUNT') ON(VALCNT)                              
+/*                                                            
+//TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR               
+//DFSMSG    DD SYSOUT=*                                       
+//                                                            
+-----------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)         
+ //STEP10  EXEC PGM=SORT                                        
+ //SORTIN  DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR            
+ //SORTOUT DD   DSN=LEMA03.PAVAN.EMP.OUTFILE,DISP=SHR           
+ //SYSOUT  DD SYSOUT=*                                          
+ //SYSIN   DD *                                                 
+   SORT FIELDS=COPY                                             
+   OMIT COND=(22,1,CH,EQ,C'M')                                  
+ /*                                                             
+---------------------------------------------------------------------
+//LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)        
+//STEP10  EXEC PGM=ICETOOL                                    
+//INDD    DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR           
+//OUTDD   DD   DSN=LEMA03.PAVAN.RANGE.OUTFILE,DISP=SHR        
+//TOOLIN  DD *                                                
+  RANGE FROM(INDD) ON(19,3,ZD) HIGHER(1) LOWER(4)             
+/*                                                            
+//TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR               
+//DFSMSG    DD SYSOUT=*                                       
+//                                                            
+---------------------------------------------------------------------
+//LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)             
+//STEP10  EXEC PGM=SORT                                            
+//SORTIN  DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR                
+//SORTOUT DD   DSN=LEMA03.PAVAN.SORTIF.OUTFILE,DISP=SHR            
+//SYSOUT  DD SYSOUT=*                                              
+//SYSIN   DD *                                                     
+  SORT FIELDS=(1,5,CH,A)                                           
+  OUTREC IFTHEN=(WHEN=(1,5,CH,EQ,C'E0001'),OVERLAY=(1:C'E1115'))   
+  END                                                              
+/*  
+-----------------------------------------------------------------        
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)    
+ //STEP10  EXEC PGM=SORT                                   
+ //SORTIN  DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR       
+ //SORTOUT DD   DSN=LEMA03.PAVAN.EMP.OUTFILE,DISP=SHR      
+ //SYSOUT  DD SYSOUT=*                                     
+ //SYSIN   DD *                                            
+  SORT FIELDS=(1,5,CH,A)                                   
+ /*                                                        
+                                                           
+-----------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)           
+ //STEP10  EXEC PGM=ICETOOL                                       
+ //INDD    DD   DSN=LEMA03.PAVAN.SPLICE.INFILE,DISP=SHR           
+ //OUTDD   DD   DSN=LEMA03.PAVAN.SPLICE.OUTFILE,DISP=SHR          
+ //TOOLIN  DD *                                                   
+   SPLICE FROM(INDD) TO(OUTDD) ON(13,6,CH) WITH(1,20) KEEPBASE    
+ /*                                                               
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR                  
+ //DFSMSG    DD SYSOUT=*                                          
+ //                                                               
+-----------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)             
+ //STEP10  EXEC PGM=SORT                                            
+ //SORTIN  DD   DSN=LEMA03.PAVAN.SPLIT.INFILE,DISP=SHR              
+ //SORTOF1 DD   DSN=LEMA03.PAVAN.SPLIT.OUTFILE1,DISP=SHR            
+ //SORTOF2 DD   DSN=LEMA03.PAVAN.SPLIT.OUTFILE2,DISP=SHR            
+ //SYSOUT  DD SYSOUT=*                                              
+ //SYSIN   DD *                                                     
+   SORT FIELDS=COPY                                                 
+   OUTFIL FNAMES=SORTOF1,INCLUDE=(17,1,CH,EQ,C'M')                  
+   OUTFIL FNAMES=SORTOF2,INCLUDE=(17,1,CH,EQ,C'F')                  
+ /*                                                                 
+-------------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)          
+ //STEP10  EXEC PGM=ICETOOL                                      
+ //INDD    DD   DSN=LEMA03.PAVAN.STATS.INFILE,DISP=SHR           
+ //TOOLIN  DD *                                                  
+   STATS FROM(INDD) ON(18,5,ZD)                                  
+ /*                                                              
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR                 
+ //DFSMSG    DD SYSOUT=*                                         
+ //                                                              
+------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)           
+ //STEP10  EXEC PGM=ICETOOL                                       
+ //INDD    DD   DSN=LEMA03.PAVAN.SUBSET.INFILE,DISP=SHR           
+ //OUTDD   DD   DSN=LEMA03.PAVAN.SUBSET.OUTFILE,DISP=SHR          
+ //TOOLIN  DD *                                                   
+   SUBSET FROM(INDD) TO(OUTDD) REMOVE OUTPUT HEADER(2) TRAILER(2) 
+ /*                                                               
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR                  
+ //DFSMSG    DD SYSOUT=*                                          
+ //                                                               
+------------------------------------------------------------------
+ //LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)     
+ //STEP10  EXEC PGM=ICETOOL                                 
+ //INDD    DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR        
+ //TOOLIN  DD *                                             
+   UNIQUE FROM(INDD) ON(1,5,CH)                             
+ /*                                                         
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR            
+ //DFSMSG    DD SYSOUT=*                                    
+ //                                                         
+----------------------------------------                                                                                                              

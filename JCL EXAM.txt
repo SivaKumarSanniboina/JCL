@@ -1,0 +1,575 @@
+1)Write the meaning for following abend codes     ( 3 marks )
+
+       a)  SOC4                                          b)  SOC7
+
+       c)  S806                                           d)  S013
+
+       e)  SB37                                           f)  S722
+
+ANSWER::
+
+a)SOC4 Abend is an invalid address referenced due to subscript error.
+b)SOC7 Abend is a data exception.For example,
+  When we try to move a non-numeric data into a numeric data item.
+c)S806 Abend occurs when a load module is invoked and it can't be found.
+  It means there is some I/O error or module not found.
+d)S013 Abend occurs when the program expects the DD to have a specific DCB 
+  but the DD has a different DCB.
+e)SB37 Abend means there are not enough space or no more extents available on the current volume.
+  Disk volume out of space,cannot write output.
+f)S722 Abend(output limit exceeded) occurred when the TEMS was attempting to stop programs that it had started. 
+
+2)2. Write down the following jcl statements
+
+            a)  To resize a ps or a pds   (2 marks)
+
+            b)  Step 10 - To copy  Input file to another Temporary file using IEBGENER              (5 marks)
+
+                 Step 20 – Copy the temporary file contents to new output file 
+
+                 Step 30 - Delete the old input file using IEFBR14
+
+Note:
+
+I)     Use condition codes to execute step20 and Step30
+
+II)    Refer back the temporary file in Step 20 and  input file in step30.
+
+III)   Write  all the possibilities of creating Temporary file
+
+ 
+
+        c) Write the above b question with IF-ELSE statement instead of condition code       (1 mark)
+
+        d) Explain the usage of TYPRUN and RESTART. Write one sample program            (1 mark)
+
+
+ANSWER::
+
+a)
+JCL statements to resize the PS
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                      
+ //*                                                              
+ //*  RESIZING THE PS                                     
+ //*                                                              
+ //STEP10  EXEC  PGM=PRODUCT                     
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR          
+ //PRODPSIN  DD  DSN=LEMA07.SIVA1.COBOL.PRODPSIN,DISP=SHR         
+ //PRODPSOUT DD  DSN=LEMA07.SIVA1.COBOL.PRODPSOUT,                
+ //              DISP=(NEW,CATLG,DELETE),                         
+ //              UNIT=SYSDA,                                      
+ //              SPACE=(TRK,(1,1),RLSE),                          
+ //              DCB=(RECFM=FB,LRECL=80,BLKSIZE=700)              
+ //SYSOUT    DD  SYSOUT=*                                         
+ //  
+
+JCL statements to resize the PDS
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                      
+ //*                                                              
+ //*  RESIZING THE PDS                                     
+ //*                                                              
+ //STEP10  EXEC  PGM=PRODUCT                     
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR          
+ //PRODPSIN  DD  DSN=LEMA07.SIVA1.COBOL.PRODPSIN,DISP=SHR         
+ //PRODPSOUT DD  DSN=LEMA07.SIVA1.COBOL.PRODPSOUT,                
+ //              DISP=(NEW,CATLG,DELETE),                         
+ //              UNIT=SYSDA,                                      
+ //              SPACE=(TRK,(1,1),RLSE),                          
+ //              DCB=(RECFM=PDS,LRECL=80,BLKSIZE=600)              
+ //SYSOUT    DD  SYSOUT=*                                         
+ //  
+                        
+b)
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                                          
+//STEP10 EXEC PGM=IEBGENER                          
+//SYSUT1 DD DSN=LEMA07.SIVA1.EMP.INFILE,DISP=SHR
+//SYSUT2 DD DSN=&&TEMP,
+//          DISP=(NEW,PASS),
+//          UNIT=SYSDA,
+//	    SPACE=(TRK,(1,1)),
+//	    DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)
+//SYSIN DD DUMMY
+//SYSPRINT DD SYSOUT=*
+//STEP20 EXEC PGM=IEBGENER,COND=(4,LT,STEP10)
+//SYSUT1 DD DSN=&&TEMP,DISP=OLD
+//SYSUT2 DD DSN=LEMA07.SIVA1.EMP.OUTFILE,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//STEP30 EXEC PGM=IEFBR14,COND=(4,LT,STEP20)
+//SYSUT1 DD DSN=&&TEMP,DISP=(OLD,DELETE,DELETE)
+//SYSPRINT DD SYSOUT=* 
+
+C)IF-ELSE instead of COND
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                                          
+//STEP10 EXEC PGM=IEBGENER                          
+//SYSUT1 DD DSN=LEMA07.SIVA1.EMP.INFILE,DISP=SHR
+//SYSUT2 DD DSN=&&TEMP,
+//          DISP=(NEW,PASS),
+//          UNIT=SYSDA,
+//	    SPACE=(TRK,(1,1)),
+//	    DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)
+//SYSIN DD DUMMY
+//SYSPRINT DD SYSOUT=*
+//IF1      IF STEP10 < 4 THEN
+//STEP20 EXEC PGM=IEBGENER
+//         ENDIF
+//SYSUT1 DD DSN=&&TEMP,DISP=OLD
+//SYSUT2 DD DSN=LEMA07.SIVA1.EMP.OUTFILE,DISP=SHR
+//SYSPRINT DD SYSOUT=*
+//IF2      IF STEP20 < 4 THEN
+//STEP30 EXEC PGM=IEFBR14
+//	   ENDIF
+//SYSUT1 DD DSN=&&TEMP,DISP=(OLD,DELETE,DELETE)
+//SYSPRINT DD SYSOUT=* 
+
+d)TYPRUN:-TYPRUN is used to request for a job processing like scanning job for syntax errors.
+	  Typrun is optional parameter.
+	  If the TYPRUN specified for the submitted job,the job will fail.
+  Example:-
+	JOB A:
+ 	 //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID
+	 //STEP10   EXEC PGM=A
+	 //INFILE    DD  DSN=LEMA07.EMP.INFILE,DISP=SHR
+	JOB B:
+	 //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TYPRUN=HOLD
+	 //STEP10   EXEC PGM=B
+	 //INFILE    DD  DSN=LEMA07.EMP.INFILE,DISP=SHR
+  RESTART:-RESTART is used to restart the execution from a particular step.
+	   It means if you want to execute STEP20 then mention RESTART=STEP20 in job statement.
+  Example:-
+	//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B,RESTART=STEP20                                                             
+	//STEP10  EXEC PGM=ORDERMNG                                
+	//STEPLIB  DD  DSN=LEMA07.COBOL.ORDER.LOADLIB,DISP=SHR 
+	//INFILE    DD  DSN=LEMA07.EMP.INFILE,DISP=SHR
+	//OUTFILE   DD  DSN=LEMA07.EMP.OUTFILE,DISP=SHR            
+	//SYSOUT   DD  SYSOUT=*                                    
+	//                                                              
+	//STEP20  EXEC PGM=ORDER                                
+	//STEPLIB  DD  DSN=LEMA07.COBOL.ORDER.LOADLIB,DISP=SHR 
+	//INFILE    DD  DSN=LEMA07.EMP.INFILE,DISP=SHR
+	//OUTFILE   DD  DSN=LEMA07.EMP.OUTFILE,DISP=SHR            
+	//SYSOUT   DD  SYSOUT=*                                    
+	//    	    	 
+              
+3)Write jcl for the given architecture, circle represents sequential data sets  and rectangle represents program to be executed.          
+
+         a)  Jan,Feb and Mar are monthly transaction files. From the transaction files prepare yearly transaction report.                                                                                                                           
+
+         b)  Generate the two output files first one is  the customer who made transaction more than 1 crore and second one is total transaction done by the Bank
+
+Note:
+
+           1) Implement data set concatenation for input files. (5 mark)
+
+          2) Assume the record layout of your own
+
+          3) Use symbolic parameters
+
+          4) Implement the overriding parameter
+
+ANSWER:::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                                       
+ //SORTPROC PROC                                     
+ //STEP10 EXEC PGM=TRANS                              
+ //INFILE1 DD DSN=LEMA07.SIVA1.&PARAM1,DISP=SHR   
+ //INFILE2 DD DSN=LEMA07.SIVA1.&PARAM2,DISP=SHR
+ //INFILE3 DD DSN=LEMA07.SIVA1.&PARAM3,DISP=SHR
+ //OUTFILE DD DSN=LEMA07.SIVA1.&PARAM4,DISP=SHR 
+ //SYSIN DD DUMMY                                    
+ //SYSOUT DD SYSOUT=*                                
+ // PEND                                             
+ //STEP20 EXEC SORTPROC,PARAM1=JAN,PARAM2=FEB,PARAM3=MAR,PARAM4=YEARLY 
+ //SYSOUT DD SYSOUT=*
+ //STEP30 EXEC PGM=GRTN
+ //INFILE1 DD DSN=LEMA07.SIVA1.&PARAM4,DISP=SHR
+ //OUTFILE DD DSN=LEMA07.SIVA1.&PARAM5,DISP=SHR
+ //SYSIN DD DUMMY                                    
+ //SYSOUT DD SYSOUT=*                                
+ // PEND                                             
+ //STEP40 EXEC SORTPROC,PARAM4=TRANS,PARAM5=VIP
+ //SYSOUT DD SYSOUT=*
+ //STEP50 EXEC PGM=SUMOF
+ //INFILE1 DD DSN=LEMA07.SIVA1.&PARAM6,DISP=SHR
+ //OUTFILE DD DSN=LEMA07.SIVA1.&PARAM7,DISP=SHR
+ //SYSIN DD DUMMY                                    
+ //SYSOUT DD SYSOUT=*                                
+ // PEND                                             
+ //STEP40 EXEC SORTPROC,PARAM6=TRANS,PARAM7=TOTAL
+ //SYSOUT DD SYSOUT=*
+
+RECORD VALUES FOR JAN:-
+C0001SIVA10000000
+C0002RAJA20000000
+C0003RANI30000000
+
+RECORD VALUES FOR FEB:-
+C0001PANI10000000
+C0002JANU20000000
+C0003VANI30000000
+
+RECORD VALUES FOR MAR:-
+C0001SONY10000000
+C0002JANI20000000
+C0003VONI30000000
+
+a)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.JAN,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.FEB,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.MAR,DISP=SHR      
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(1,5,CH,A)
+  SUM FIELDS=(10,8,ZD)
+/*
+//
+
+B)
+The customer who made transaction more than 1 crore:
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.JAN,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.FEB,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.MAR,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.YEARLY,DISP=SHR 
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(10,8,GT,C'10000000')
+/*
+//
+
+Total transaction done by the Bank:
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.JAN,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.FEB,DISP=SHR
+//SORTIN DD DSN=LEMA07.SIVA.MAR,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.YEARLY,DISP=SHR 
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(1,5,CH,A)
+  SUM FIELDS=(10,8,ZD)
+/*
+//
+
+
+4)From the above question ,write  the Cataloged procedure for generating VIP File and Instream procedure for generating Total file.      
+
+ANSWER:::
+
+Cataloged procedure for generating VIP File:-
+
+//SORTPROC GRTN
+//STEP10 EXEC PGM=SORT
+//INFILE DD DUMMY     
+//OUTFILE DD DUMMY          
+//SYSOUT DD SYSOUT=* 
+
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                       
+//JCLLIB ORDER=LEMA07.SIVA1.COBOL.SRC                            
+//STEP20 EXEC SORTPROC                                            
+//STEP10.INFILE DD DSN=LEMA07.SIVA1.YEARLY,DISP=SHR           
+//STEP10.OUTFILE DD DSN=LEMA07.SIVA1.VIP,DISP=SHR                                                                      
+//SYSOUT DD SYSOUT=*                                              
+//     
+    
+Instream procedure for generating Total file:-
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                                                               
+//SORTPROC PROC                                                 
+//STEP10 EXEC PGM=SUMOF                                         
+//INFILE DD DUMMY                                               
+//OUTFILE DD DUMMY                                                                                             
+//SYSOUT DD SYSOUT=*                                            
+// PEND                                                         
+//STEP20 EXEC SORTPROC                                          
+//STEP10.INFILE DD DSN=LEMA07.SIVA1.YEARLY,DISP=SHR         
+//STEP10.OUTFILE DD DSN=LEMA07.SIVA1.TOTAL,DISP=SHR       
+//SYSOUT DD SYSOUT=*                                                                                                         
+//        
+      
+5)Write the jcl program that reads records from the instream data set with the following record lay out.
+
+ 
+
+                  01 Mobile-Prod
+
+                        02  Mobile-Id       pic     x(5).
+
+                        02  Mobile-name  pic     x(10).
+
+                        02  Mobile-Cat     pic     x(5).
+
+                        02  Quantity         pic     9(3).
+
+                        02   Price              pic      9(5)v99.
+
+ 
+
+             
+
+    1)  List  Mobile-Name , Quantity and Price  in the Descending order of Mobile-Id.                (1 mark)
+
+    2)  Copy all the records into another file and discard Mobile with the same Mobile-Name.   (2 mark)
+
+    3)  Sort the file in descending order with respect to Price                                                      (2 mark)
+
+    4)  List all  mobile products in the descending order of their quantity and Mobile-Name 
+
+         begin  with  ‘s’.                                                                                                                   (2 mark)
+
+   5)  Include all mobile products whose price is greater than 15000 and sort based on price   (2 mark)
+
+   6)  Copy Samsung mobile products and Micromax mobile products in two different files       (2 mark)
+
+   7)  Sort all products based on price and list only Mobile-Name and Quantity                         (2 mark)
+
+ANSWER::
+
+RECORD VALUES::
+
+M0001SAMSUNG   ANDRO00360000.22
+M0002MICROMAX  ANDRO00240000.33
+M0003APPLE11PROIOS  00199000.44
+
+1)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(1,5,CH,D)
+/*
+//
+2)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT DD DSN=LEMA07.SIVA.SALEOUT,DISP=SHR   
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=COPY
+/*
+//
+3)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(24,5,CH,D)
+/*
+//
+4)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(21,3,CH,D)
+/*
+//
+5)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(24,5,GT,C'15000')
+/*
+//
+6)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT1 DD DSN=LEMA07.SIVA.SAMSUNG,DISP=SHR 
+//SORTOUT2 DD DSN=LEMA07.SIVA.MICROMAX,DISP=SHR  
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=COPY
+/*
+//
+7)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(1,5:10,4,21:3)
+/*
+//
+
+6)6.  Consider the same record layout from the above question.
+
+    
+
+    a)  Create a Ksds file (Mobileproducts) with Mobile-Id as key and copy all the contents of sequential File into cluster.   (2 marks)
+
+ 
+
+    b)  Accept the cat-Id and display costliest mobile name, quantity and price                       (2 marks)
+
+ 
+
+    c)  List the maximum price mobile name, quantity and price for each category                 (2 marks)
+
+ 
+
+    d)  which mobile product is having less number of quantity  (2 marks)
+
+ 
+
+     f)  Segregate mobile products whose name begins with ‘s’ , price greater than 16000 and smart phone category in to samsung file and mobile name begins with ‘M’ and price greater than 10000 and less than 20000 in to a micromax file. (3 marks)
+
+
+ANSWER:-
+
+RECORD VALUES::
+
+M0001SAMSUNG   ANDRO00360000.22
+M0002MICROMAX  ANDRO00240000.33
+M0003APPLE11PROIOS  00199000.44
+
+a)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)   
+//STEP10 EXEC PGM=SORT                                
+//SYSPRINT DD SYSOUT=*                                   
+//SYSIN DD *                                             
+  REPRO -                                                
+  INDATASET(LEMA07.SIVA.SALEIN) -                   
+  OUTDATASET(LEMA07.PRODUCTS.KSDS)
+  SORT FIELDS=COPY                      
+/*                                                       
+//   
+b)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT,PARM='M0001'                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR     
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+   SORT FIELDS=(1,5,CH,A)
+   SUM FIELDS=(24,5,ZD)
+/*
+//
+c)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT DD DSN=LEMA07.SIVA.OUTFL,DISP=SHR   
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+   SORT FIELDS=(24,5,LT,C'99999')
+   SUM FIELDS=(24,5,ZD)
+   OUTREC FIELDS=(1,24:5,3,6:10)
+/*
+//
+d)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT DD DSN=LEMA07.SIVA.OUTFL,DISP=SHR   
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+   SORT FIELDS=(21,3,LT,C'004')
+   SUM FIELDS=(24,5,ZD)
+   
+/*
+//
+f)
+1)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT1 DD DSN=LEMA07.SIVA.SAMSUNG,DISP=SHR   
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+   SORT FIELDS = COPY
+   SORT FIELDS=((6,10,CH,C'S'),(24,5,GT,C'16000'))
+   
+/*
+//
+2)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR 
+//SORTOUT1 DD DSN=LEMA07.SIVA.MICROMAX,DISP=SHR 
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+   SORT FIELDS = COPY
+   SORT FIELDS=((5,10,CH,C'M'),(24,5,GT,C'10000')&(24,5,LT,C'20000'))
+   
+/*
+//
+
+
+
+
+7)7.  Define a dataset  to backup weekly sales report and to maintain report in chronological order. Limit the number of generations to 4.create a new generation of GDG and copy last week sales report(Flat file) to the current generation.
+
+           a)  Prepare the monthy sales report for a month.                                                           (4 marks)
+
+           b) Pass mobile-cat as parameter through jcl.For that category ,List the sales details less than 12000.
+
+  
+
+    Note: Assume your own record layout for sales details.
+
+ANSWER::
+
+RECORD VALUES:-
+'LEMA07.SIVA.SALEIN'
+
+S0001SIVAVIVO      20000
+S0002RAJASAMSUNG   30000
+S0003RANISAMSUNG   40000
+S0004VASUMICROMAX  50000
+
+Generating the versions:
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+//*USAGE OF IEBGENER WITH GDG                       
+//STEP10 EXEC PGM=IEBGENER                          
+//SYSUT1 DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSUT2 DD DSN=LEMA07.EMP.GDG.BACKUP(+1),          
+//          UNIT=SYSDA,                             
+//          DISP=(NEW,CATLG,DELETE),                
+//          SPACE=(TRK,(1,3),RLSE),                 
+//          DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)     
+//SYSIN DD *
+//  DEFINE GENERATIONDATAGROUP -
+			(LIMIT(4))
+                                                                 
+//SYSPRINT DD SYSOUT=* 
+
+
+a)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.EMP.INFL,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.EMP.OUTFL,DISP=SHR 
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(1,5,CH,A)
+  SUM FIELDS=(20,5,ZD)
+  OUTREC FIELDS=(1:20,1)
+/*
+//
+
+b)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT,PARM='SAMSUNG   '                            
+//SORTIN DD DSN=LEMA07.SIVA.SALEIN,DISP=SHR    
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(20,5,LT,C'12000')
+/*
+//
+   

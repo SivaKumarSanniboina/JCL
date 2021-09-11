@@ -1,0 +1,11 @@
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B     
+//*                                                     
+//*  RUN A COBOL PROGRAM                                
+//*                                                     
+//STEP01  EXEC PGM=IEFBR14                              
+//INFILE   DD  DSN=LEMA07.KUMAR.PRODUCT.INFILE,         
+//             DISP=(MOD,CTLG,DELETE),                  
+//             UNIT=SYSDA,                              
+//             SPACE=(TRK,(1,1),RLSE),                  
+//             DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)      
+//SYSOUT   DD  SYSOUT=*                                 

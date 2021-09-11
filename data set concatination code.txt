@@ -1,0 +1,79 @@
+LEMA07.SIVA1.COBOL.SRC(CONCAT)
+
+ IDENTIFICATION DIVISION.
+ PROGRAM-ID. CONCAT.                         
+ ENVIRONMENT DIVISION.                       
+ INPUT-OUTPUT SECTION.                       
+ FILE-CONTROL.                               
+     SELECT EMPFL ASSIGN TO INFILE           
+     ORGANIZATION IS SEQUENTIAL              
+     ACCESS MODE IS SEQUENTIAL.              
+ DATA DIVISION.                              
+ FILE SECTION.                               
+ FD EMPFL.                                   
+ 01 EMPREC.                                  
+     05 EMPID    PIC X(5).                   
+     05 EMPNAME  PIC X(15).                  
+     05 DEPT     PIC X(10).                  
+     05 SALARY   PIC 9(5).                   
+     05 FILLER   PIC X(45).                  
+ WORKING-STORAGE SECTION.                    
+ 77 WS-COUNT    PIC 99 VALUE 0.              
+ 77 WS-EOF      PIC 9  VALUE 0.              
+ PROCEDURE DIVISION.                         
+ 0000-MAIN PARA.                             
+     PERFORM 1000-OPEN-PARA.                 
+     PERFORM 2000-READ-PARA UNTIL WS-EOF=1.  
+     PERFORM 3000-CLOSE-PARA.                
+     STOP RUN.                               
+ 1000-OPEN-PARA.                             
+     OPEN INPUT EMPFL.                       
+ 2000-READ-PARA.                             
+     READ EMPFL                              
+         AT END                              
+           MOVE 1 TO WS-EOF                  
+         NOT AT END                          
+           MOVE 1 TO WS-COUNT                
+     END-READ.                               
+ 3000-CLOSE-PARA.                            
+     CLOSE EMPFL. 
+
+
+1)LEMA07.HTC.JAVA
+E0001SIVA KUMAR     JAVA      20000
+E0002RAJA KUMAR     JAVA      20000
+2)LEMA07.HTC.TRAINING
+E0001RANI KUMARI    TRAINING  18000
+E0002VASU KUMAR     TRAINING  18000
+3)LEMA07.HTC.MFRAMES
+E0001SIVA KUMAR     MFRAMES   19000
+E0002RAJ  KUMAR     MFRAMES   19000
+
+COMPILE JCL::
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID       
+//PLIB    JCLLIB ORDER=(MATE2.PROCLIB)            
+//*                                               
+//*  COMPILE A COBOL PROGRAM                      
+//*                                               
+//CL      EXEC COBOLCL,                           
+//*            COPYLIB=LEMA07.COPYLIB,            
+//             LOADLIB=LEMA07.SIVA1.COBOL.LOADLIB,
+//             SRCLIB=LEMA07.SIVA1.COBOL.SRC,     
+//             MEMBER=CONCAT    <= SOURCE MEMBER  
+
+RUN JCL::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                
+ //*                                                        
+ //*  RUN PRODUCT PS PROGRAM                                
+ //*                                                        
+ //STEP10  EXEC  PGM=CONCAT                                 
+ //STEPLIB   DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR    
+ //INFILE    DD  DSN=LEMA07.HTC.JAVA,DISP=SHR               
+ //          DD  DSN=LEMA07.HTC.TRAINING,DISP=SHR           
+ //          DD  DSN=LEMA07.HTC.MFRAMES,DISP=SHR            
+ //SYSOUT    DD  SYSOUT=*                                   
+
+output:
+06                            

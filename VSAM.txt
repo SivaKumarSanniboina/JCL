@@ -1,0 +1,276 @@
+INTRODUCTION:
+
+VSAM is an IBM data access method that enables you to organize and access records in a disk data set. VSAM is available under the z/OS operating environment.
+VSAM is high performance access method used in MVS,DOS/VSE & VM operating systems.
+
+IDCAMS is the utility program used for operating on VSAM data sets.
+
+Used to access the data sets quickly and effectively.
+
+Used to organize, store, catalog, retrieve and delete data sets.
+
+ADVANTAGES:
+
+Data can be accessed faster.
+
+Records can be inserted in more efficient manner.
+
+Deletion of records results in them being  physically removed from   the disk.
+
+Records can be accessed sequentially or randomly.
+
+VSAM data sets are device independent.
+
+DISADVANTAGES:
+
+VSAM data sets require more storage space than other types of data sets.
+
+VSAM data set require additional free space that must be embedded in them.
+
+
+DATA SETS IN VSAM:
+
+Entry-Sequenced Data Set (ESDS)
+
+Key-Sequenced Data Set (KSDS)
+
+Relative Record Data Set (RRDS)
+
+Linear Data Set (LDS)
+
+CLUSTER:
+
+A cluster is the collection of physical data sets that make up one logical data set.
+VSAM Datasets are referred in JCL as cluster .
+
+-->KSDS Cluster – contains data component and Index Component with it
+
+IDCAMS:
+
+IDCAMS PERFORMS THE FOLLOWING FUNCTIONS:::
+
+ DEFINE   	  -      It defines a data set
+
+ REPRO    		  -      It loads a data set
+
+ PRINT    	              -      It prints the contents of a data set
+
+ EXPORT/IMPORT -      It copies or backs up a data set
+
+ ALTER  		  -      It changes certain attributes of a 			         data set
+
+ LISTCAT               -      It lists data set attributes and 					statistical information    
+ DELETE                 -      It deletes a data set 
+
+
+
+
+
+
+
+VSAM creation :::
+
+type V in Command and name is : LEMA07.PRODUCTS.KSDS and enter
+then 1 AND 4 Enter
+cluster level info:::
+space units .....2
+primary quantity...2
+secondary quantity ...2
+control interval size ..4096
+free space CI-percent..5
+ca-percent ..5
+Record size Average ...80
+keys length ..5
+off set ..0
+maximum,..80
+volume....DEVHD4
+Index info::
+Control interval size...1024 and ENTER
+COMMAND....EXEC enter
+u will get Return Command 0at top right.
+
+
+
+ 
+
+LEMA07.PRODUCTS.KSDS
+
+ /* IDCAMS COMMAND */                                
+ DEFINE CLUSTER (NAME(LEMA07.PRODUCTS.KSDS) -        
+        TRACKS(2 2) -                                
+        VOLUMES(DEVHD4 -                             
+               ) -                                   
+        CONTROLINTERVALSIZE(4096) -                  
+        FREESPACE(5 5) -                             
+        KEYS(5 0) -                                  
+        RECORDSIZE(80 80) -                          
+        ) -                                          
+        DATA (NAME(LEMA07.PRODUCTS.KSDS.DATA) -      
+        CONTROLINTERVALSIZE(1024) -                  
+        ) -                                          
+        INDEX (NAME(LEMA07.PRODUCTS.KSDS.INDEX) -    
+        CONTROLINTERVALSIZE(1024) -                  
+        ) 
+
+1)LEMA07.SIVA1.COBOL.SRC(IDCAMS)    
+ 
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)   
+//STEP10 EXEC PGM=IDCAMS                                 
+//SYSPRINT DD SYSOUT=*                                   
+//SYSIN DD *                                             
+  REPRO -                                                
+  INDATASET(LEMA07.SIVA1.EMP.INFILE) -                   
+  OUTDATASET(LEMA07.PRODUCTS.KSDS)                       
+/*                                                       
+//                                                       
+
+ LEMA07.PROD.INFILE         
+
+ P001PEN 10                     
+ P002BALL20                     
+ P003BAT 30 
+
+output:::
+IDCAMS  SYSTEM SERVICES                                           TIME: 18:42:30
+                                                                                
+  REPRO -                                                               00050000
+  INDATASET(LEMA07.PROD.INFILE) -                                       00060000
+  OUTDATASET(LEMA07.PRODUCTS.KSDS)                                      00070000
+IDC0005I NUMBER OF RECORDS PROCESSED WAS 3                                      
+IDC0001I FUNCTION COMPLETED, HIGHEST CONDITION CODE WAS 0                       
+                                                                                
+IDC0002I IDCAMS PROCESSING COMPLETE. MAXIMUM CONDITION CODE WAS 0    
+
+2)prod code:::
+
+ LEMA07.SIVA1.COBOL.SRC(VSAMPROD) 
+    IDENTIFICATION DIVISION.                      
+    PROGRAM-ID. VSAMPROD.                         
+    ENVIRONMENT DIVISION.                         
+    INPUT-OUTPUT SECTION.                         
+    FILE-CONTROL.                                 
+    SELECT PRODFYL ASSIGN TO PROD                 
+    ORGANIZATION IS INDEXED                       
+    ACCESS MODE IS RANDOM                         
+    RECORD KEY IS PROD-ID OF PROD-REC.            
+    DATA DIVISION.                                
+    FILE SECTION.                                 
+    FD PRODFYL.                                   
+    01 PROD-REC.                                  
+      05 PROD-ID PIC X(3).                        
+      05 PROD-NAME PIC X(4).                      
+      05 FILLER PIC X(73).                        
+    WORKING-STORAGE SECTION.                      
+    77 WS-KEY PIC X(3) VALUE 'P001'.              
+    PROCEDURE DIVISION.                           
+        OPEN INPUT PROD.                          
+        MOVE WS-KEY TO PROD-ID.                   
+        READ PRODFYL KEY IS PROD-ID               
+            INVALID KEY                           
+               DISPLAY "KEY NO FOUND"             
+            NOT INVALID KEY                       
+               DISPLAY "KEY FOUND"                
+        END-READ.                                 
+        CLOSE PRODFYL.                            
+        STOP RUN. 
+
+LOADLIB :::
+
+LEMA07.SIVA1.COBOL.LOADLIB
+
+COMPILE VSAMPROD:::
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                             
+//PLIB    JCLLIB ORDER=(MATE2.PROCLIB)                                  
+//*                                                                     
+//*  COMPILE A COBOL PROGRAM                                            
+//*                                                                     
+//CL      EXEC COBOLCL,                                                 
+//*            COPYLIB=LEMA07.COPYLIB,              <= COPYBOOK LIBRARY 
+//             LOADLIB=LEMA07.SIVA1.COBOL.LOADLIB,       <= LOAD LIBRARY
+//             SRCLIB=LEMA07.SIVA1.COBOL.SRC,         <=SOURCE LIBRARY  
+//             MEMBER=VSAMPROD                        <= SOURCE MEMBER  
+RUN VSAMPROD:::
+
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,CLASS=B         
+ //*                                                         
+ //*  RUN A COBOL PROGRAM                                    
+ //*                                                         
+ //STEP10  EXEC PGM=VSAMPROD                                 
+ //STEPLIB  DD  DSN=LEMA07.SIVA1.COBOL.LOADLIB,DISP=SHR      
+ //PROD     DD  DSN=LEMA07.PROD.KSDS,DISP=SHR                
+ //SYSOUT   DD  SYSOUT=*                                     
+
+CLUSTER FOR LEMA07.PROD.KSDS::::
+
+ /* IDCAMS COMMAND */                                    
+ DEFINE CLUSTER (NAME(LEMA07.PROD.KSDS) -                
+        TRACKS(2 2) -                                    
+        VOLUMES(DEVHD4 -                                 
+               ) -                                       
+        CONTROLINTERVALSIZE(4096) -                      
+        FREESPACE(5 5) -                                 
+        KEYS(5 0) -                                      
+        RECORDSIZE(80 80) -                              
+        ) -                                              
+        DATA (NAME(LEMA07.PROD.KSDS.DATA) -              
+        CONTROLINTERVALSIZE(1024) -                      
+        ) -                                              
+        INDEX (NAME(LEMA07.PROD.KSDS.INDEX) -            
+        CONTROLINTERVALSIZE(1024) -                      
+        )                 
+
+
+
+CLUSTER FIELDS:::
+
+ Cluster Name  . . . LEMA07.PRODUC.KSDS                                     
+                                                                   More:    
+                          Cluster Level Information:                        
+                                                                            
+ Space Units  . . . . . . . 2  1. Cylinders   Primary Quantity . . . 2      
+                               2. Tracks      Secondary Quantity . . 2      
+                               3. Records                                   
+                               4. Kilobytes                                 
+                               5. Megabytes                                 
+ Volumes  . . . . . . . . . DEVHD4  . . .         . . .         . . .       
+ Buffer Space . . . . . . .                                                 
+ Control Interval Size  . . 4096                                            
+ Data Class . . . . . . . .                                                 
+ Management Class . . . . .                                                 
+ Storage Class  . . . . . .                                                 
+ Free Space CI-Percent  . . 5             CA-Percent   5                    
+ Record Size   Average  . . 80            Maximum  . . 80                   
+ Share Options  Region  . .    (1,2,3,4)  System . . .    (3,4)             
+ Keys           Length  . . 5             Offset . . . 0                    
+ Days               For . .           or  To . . . . .              (YYYY DD
+                                                                            
+                                                                            
+ Enter any of the following keywords:                                       
+                                                                            
+ Noerase or Erase . . . . .                                                 
+ Norecatalog or Recatalog                                                   
+ Noreuse or Reuse . . . . .                                                 
+ Nonspanned or Spanned  . .                                                 
+ Recovery or Speed  . . . .                                                 
+ Unique, Suballocation  . .                                                 
+ Indexed,NOnindexed,Linear or NUmbered  . . .                               
+                                                                            
+
+LEMA07.PRODUC.KSDS:::::   
+  /* IDCAMS COMMAND */                                  
+  DEFINE CLUSTER (NAME(LEMA07.PRODUC.KSDS) -            
+         TRACKS(2 2) -                                  
+         VOLUMES(DEVHD4 -                               
+                ) -                                     
+         CONTROLINTERVALSIZE(4096) -                    
+         FREESPACE(5 5) -                               
+         KEYS(5 0) -                                    
+         RECORDSIZE(80 80) -                            
+         ) -                                            
+         DATA (NAME(LEMA07.PRODUC.KSDS.DATA) -          
+         CONTROLINTERVALSIZE(1024) -                    
+         ) -                                            
+         INDEX (NAME(LEMA07.PRODUC.KSDS.INDEX) -        
+         CONTROLINTERVALSIZE(1024) -                    
+         )                                                                          
+                                                                                                           

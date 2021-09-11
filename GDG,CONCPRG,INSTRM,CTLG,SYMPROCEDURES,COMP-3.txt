@@ -1,0 +1,129 @@
+1)IEBGENER WITH GDG:::::
+
+LEMA07.SIVA1.COBOL.SRC
+E IEBGN
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+//*USAGE OF IEBGENER WITH GDG                       
+//STEP10 EXEC PGM=IEBGENER                          
+//SYSUT1 DD DSN=LEMA07.SIVA1.EMP.INFILE,DISP=SHR    
+//SYSUT2 DD DSN=LEMA07.EMP.GDG.BACKUP(+1),          
+//          UNIT=SYSDA,                             
+//          DISP=(NEW,CATLG,DELETE),                
+//          SPACE=(TRK,(1,3),RLSE),                 
+//          DCB=(RECFM=FB,LRECL=80,BLKSIZE=800)     
+//SYSIN DD DUMMY                                    
+//SYSPRINT DD SYSOUT=* 
+
+SUBMIT U WILL GET THE VERSION ONE
+AGAIN SUBMIT U WILL GET ANOTHER VERSION
+
+Todays Topics::
+
+3)INSTREAM PROCEDURE:::
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                     
+//* INSTREAM PROCEDURE                                          
+//SORTPROC PROC                                                 
+//STEP10 EXEC PGM=SORT                                          
+//SORTIN DD DUMMY                                               
+//SORTOUT DD DUMMY                                              
+//SYSIN DD DUMMY                                                
+//SYSOUT DD SYSOUT=*                                            
+// PEND                                                         
+//STEP20 EXEC SORTPROC                                          
+//STEP10.SORTIN DD DSN=LEMA07.SIVA1.EMP.INFILE,DISP=SHR         
+//STEP10.SORTOUT DD DSN=LEMA07.SIVA1.EMP.OUTFILE,DISP=SHR       
+//SYSOUT DD SYSOUT=*                                            
+//STEP10.SYSIN DD *                                             
+  SORT FIELDS=(1,5,CH,A)                                        
+/*                                                              
+//  
+                                                            
+LEMA07.SIVA1.EMP.INFILE 
+
+ E0001SIVA      20000 M     
+ E0003RAMA      40000 F     
+ E0002RAJA      20000 M     
+LEMA07.SIVA1.EMP.OUTFILE  
+ E0001SIVA      20000 M  
+ E0002RAJA      20000 M  
+ E0003RAMA      40000 F  
+
+4)CATLOG PROCEDURE:::
+CREATE PDS:::
+ Data Set Name  . . . : LEMA07.SIVA1.PROCLIB                               
+                                                                           
+ Management class . . .                (Blank for default management class)
+ Storage class  . . . .                (Blank for default storage class)   
+  Volume serial . . . . STRVL2         (Blank for system default volume) **
+  Device type . . . . .                (Generic unit or device address) ** 
+ Data class . . . . . .                (Blank for default data class)      
+  Space units . . . . . BLOCK          (BLKS, TRKS, CYLS, KB, MB, BYTES    
+                                        or RECORDS)                        
+  Average record unit                  (M, K, or U)                        
+  Primary quantity  . . 3              (In above units)                    
+  Secondary quantity    1              (In above units)                    
+  Directory blocks  . . 5              (Zero for sequential data set) *    
+  Record format . . . . FB                                                 
+  Record length . . . . 80                                                 
+  Block size  . . . . . 800                                                
+  Data set name type    PDS            (LIBRARY, HFS, PDS, LARGE, BASIC, * 
+                                        EXTREQ, EXTPREF or blank) 
+                                               
+ LEMA07.SIVA1.PROCLIB(SORTPROC) ::
+   
+//SORTPROC PROC       
+//STEP10 EXEC PGM=SORT
+//SORTIN DD DUMMY     
+//SORTOUT DD DUMMY    
+//SYSIN DD DUMMY      
+//SYSOUT DD SYSOUT=* 
+
+ LEMA07.SIVA1.
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID                       
+// JCLLIB ORDER=LEMA07.SIVA1.COBOL.SRC                            
+//STEP20 EXEC SORTPROC                                            
+//STEP10.SORTIN DD DSN=LEMA07.SIVA1.EMP.INFILE,DISP=SHR           
+//STEP10.SORTOUT DD DSN=LEMA07.SIVA1.EMP.OUTFILE,DISP=SHR         
+//STEP10.SYSIN DD *                                               
+  SORT FIELDS=(1,5,CH,A)                                          
+/*                                                                
+//SYSOUT DD SYSOUT=*                                              
+//                                                                 
+
+LEMA07.SIVA1.EMP.OUTFILE:::
+
+ E0001SIVA      20000 M  
+ E0002RAJA      20000 M  
+ E0003RAMA      40000 F  
+
+5)Symbolic procedure::::
+
+  LEMA07.SIVA1.COBOL.SRC(SYMPRO)
+         
+ //LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID         
+ //* SYMBOLIC PROCEDURE                              
+ //SORTPROC PROC                                     
+ //STEP10 EXEC PGM=SORT                              
+ //SORTIN DD DSN=LEMA07.SIVA1.EMP.&PARAM1,DISP=SHR   
+ //SORTOUT DD DSN=LEMA07.SIVA1.EMP.&PARAM2,DISP=SHR  
+ //SYSIN DD DUMMY                                    
+ //SYSOUT DD SYSOUT=*                                
+ // PEND                                             
+ //STEP20 EXEC SORTPROC,PARAM1=INFILE,PARAM2=OUTFILE 
+ //SYSOUT DD SYSOUT=*                                
+ //STEP10.SYSIN DD *                                 
+   SORT FIELDS=(1,5,CH,A)                            
+ /*                                                  
+ //                                                  
+          
+6)product infile::::COMP -3
+
+pid     pic x(5)
+pname   pic x(4)
+price   pic S9(5)v99 COMP-3 -------->>>> check emulator>>lema07.COMP.infile>> price 252.22,price 354.44
+filler  pic x(64) 
+       
+LOOK LIKE:--
+ P0001PEN   â 
+ P0002BALL à          

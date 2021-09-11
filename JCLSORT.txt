@@ -1,0 +1,108 @@
+E0001SIVA      20000M
+E0003RAMA      40000F
+E0002RAJA      30000M
+E0004RANI      50000F
+
+INFILE:
+LEMA07.SIVA1.EMP.INFILE
+OUTFILE:
+LEMA07.SIVA1.EMP.OUTFILE
+
+1)COPY
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.EMP.INFL,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.EMP.OUTFL,DISP=SHR   
+//SYSOUT DD SYSOUT=*                                 
+//SYSIN DD *   						-->sysin is for sorting and sysin is instream data set                                      
+  SORT FIELDS=COPY                                   
+/*                                                   
+// 
+  
+2)SORT FIELDS
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.EMP.INFL,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.EMP.OUTFL,DISP=SHR 
+//SYSIN DD *SAVE
+  SORT FIELDS(1,5,CH,A) OR SORT FIELDS(1,5,CH,D)
+/*
+//
+
+3)INCLUDE AND OMIT
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.EMP.INFL,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.EMP.OUTFL,DISP=SHR 
+//SYSIN DD *
+  SORT FIELDS=COPY
+  INCLUDE COND=(20,1,CH,EQ,C'F') OR INCLUDE COND=(20,1,CH,EQ,C'M')
+			OR
+  OMIT COND=(20,1,CH,EQ,C'F')
+/*
+//
+
+
+4)OUTREC
+
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID          
+//STEP10 EXEC PGM=SORT                               
+//SORTIN DD DSN=LEMA07.SIVA.EMP.INFL,DISP=SHR     
+//SORTOUT DD DSN=LEMA07.SIVA.EMP.OUTFL,DISP=SHR 
+//SYSOUT DD SYSOUT=*
+//SYSIN DD *
+  SORT FIELDS=(20,1,CH,A)
+  SUM FIELDS=(15,5,ZD)
+  OUTREC FIELDS=(1:20,1,3:15,5)
+/*
+//
+OUTREC FIELDS =(1:20,1,4:15,5)
+
+5)
+//LEMA07D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)         
+ //STEP10     EXEC PGM=SORT                                     
+ //SORTIN01   DD   DSN=LEMA07.SIVA.MERGE.INFILE,DISP=SHR       
+ //SORTIN02   DD   DSN=LEMA07.SIVA.MERGE.INFILE1,DISP=SHR      
+ //SORTOUT    DD   DSN=LEMA07.SIVA.MERGE.OUTFILE,DISP=SHR      
+ //SYSOUT     DD SYSOUT=*                                       
+ //SYSIN      DD *                                              
+   MERGE FIELDS=(1,3,CH,A)                                      
+ /*                                                             
+ //
+6)
+//LEMA03D JOB MSGLEVEL=(1,1),NOTIFY=&SYSUID,TIME=(0,2)       
+ //STEP10  EXEC PGM=ICETOOL                                   
+ //INDD    DD   DSN=LEMA03.PAVAN.EMP.INFILE,DISP=SHR          
+ //OUTDD   DD   DSN=LEMA03.PAVAN.RANGE.OUTFILE,DISP=SHR       
+ //TOOLIN  DD *                                               
+   RANGE FROM(INDD) ON(19,3,ZD) HIGHER(1) LOWER(4)            
+ /*                                                           
+ //TOOLMSG  DD DSN=LEMA03.PAVAN.TOOLMSG,DISP=SHR              
+ //DFSMSG    DD SYSOUT=*                                      
+ //
+
+
+
+
+copy,include,omit,merge,split
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+2nd pdf:-
+1)default :
+
+2)stats :
+STATS FROM(indd) ON(p,m,f) VSAMTYPE(x) LMSG ON(VLEN)   
+
+

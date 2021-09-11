@@ -1,0 +1,14 @@
+  LEMA07.KUMAR.COBOL.SRC(PG2)
+
+IDENTIFICATION DIVISION.             
+ PROGRAM-ID. PG2.                     
+ ENVIRONMENT DIVISION.                
+ DATA DIVISION.                       
+ LINKAGE SECTION.                     
+ 01 PARM-REC.                         
+     05 PARAM-LEN   PIC S9(04) COMP.  
+     05 PARAM-VALUE PIC X(05).        
+ PROCEDURE DIVISION USING PARM-REC.   
+ 0000-MAIN-PARA.                      
+     DISPLAY PARAM-VALUE.             
+     STOP RUN.                        

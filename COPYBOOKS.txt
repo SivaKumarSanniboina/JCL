@@ -1,0 +1,22 @@
+COPYLIB:::
+ LEMA07.COPYLIB(EMPREC)
+
+        01 EMPREC.                
+           05 EMPID    PIC X(5).  
+           05 EMPNAME  PIC X(10). 
+           05 FILLER   PIC X(65). 
+
+IN COBOL::
+
+ADD 
+'COPY EMPREC'.
+
+IN JCL::
+//SYSLIB DD DSN=LEMA07.COPYLIB,DISP=SHR
+
+ADVANTAGE::
+
+Assume that EMPREC copy book is referred in 100 application programs.
+if i want to add one more field PANNUMBER to EMPREC.It is enough for me to update 
+the copybook alone rather updating all 100 programs where it is used.
+ 

@@ -1,0 +1,9 @@
+LEMA07.SIVA.COBOL.SRC  
+ 
+IDENTIFICATION DIVISION.      
+ PROGRAM-ID. PGR1.             
+ ENVIRONMENT DIVISION.         
+ DATA DIVISION.                
+ PROCEDURE DIVISION.           
+     DISPLAY ' HELLO COBOL'.   
+     STOP RUN.                 
